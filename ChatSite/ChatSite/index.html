@@ -47,15 +47,27 @@
     </style>
 </head>
 <body>
-    <div id="divLogin" class="login">
-        <div>
-            Your Name:<br />
-            <input id="txtNickName" type="text" class="textBox" />
-        </div>
-        <div id="divButton">
-            <input id="btnStartChat" type="button" class="submitButton" value="Start Chat" />
-        </div>
-    </div>
+    <div class="modal fade" tabindex="-1" role="dialog" id="Login">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    
+                    <h4 class="modal-title">Join Chat Room</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <input type="text" class="form-control" placeholder="Username" id="txtNickName">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="btnStartChat">Join</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
     <div class="container" style="margin-top:20px">
         <div class="row">
 
@@ -107,19 +119,25 @@
 
             });
 
+            
+                $('#Login').on('hidden.bs.modal', function () {
+                    $("#btnStartChat").click();
+                })
+           
+
+            
+
         });
 
         function setScreen(isLogin) {
 
             if (!isLogin) {
+                $('#Login').modal('show');
 
-                $("#divChat").hide();
-                $("#divLogin").show();
             }
             else {
 
                 $("#divChat").show();
-                $("#divLogin").hide();
             }
 
         }
@@ -128,12 +146,15 @@
 
             $("#btnStartChat").click(function () {
 
+                $('#Login').modal('hide');
+
                 var name = $("#txtNickName").val();
                 if (name.length > 0) {
                     chatHub.server.connect(name);
                 }
                 else {
-                    alert("Please enter name");
+                    alert("Please enter your name");
+                    $('#Login').modal('show');
                 }
 
             });

@@ -13,20 +13,6 @@ namespace ChatSite
 
 
         ChatDataContext CDC = new ChatDataContext();
-        public void Send(string name, string message)
-        {
-            // Call the broadcastMessage method to update clients.
-            Clients.All.broadcastMessage(name, message);
-
-            tblChatHistory newChat = new tblChatHistory()
-            {
-                ChatUserName = name,
-                Chat = message,
-                DateSent = DateTime.Now
-            };
-            CDC.tblChatHistories.InsertOnSubmit(newChat);
-            CDC.SubmitChanges();
-        }
 
         public void Connect(string userName)
         {
@@ -36,7 +22,11 @@ namespace ChatSite
             if (Users.Count(x => x.ConnectionId == id) == 0)
             {
                 Users.Add(new User { ConnectionId = id, UserName = userName });
-
+                if (Message.Count == 0)
+                {
+                    Message = (from chats in CDC.tblChatHistories
+                               select new Message { MessageContent = chats.Chat, UserName = chats.ChatUserName, MessageTime = DateTime.Parse(chats.DateSent.ToString()).ToString("HH:mm") }).ToList();
+                }
                 // send to caller
                 Clients.Caller.onConnected(id, userName, Users, Message);
 
@@ -52,6 +42,16 @@ namespace ChatSite
             string CurrentTime = DateTime.Now.ToString("HH:mm");
             // store last 100 messages in cache
             AddMessageinCache(userName, message, CurrentTime);
+
+            //Save to database
+            tblChatHistory newChat = new tblChatHistory()
+            {
+                ChatUserName = userName,
+                Chat = message,
+                DateSent = DateTime.Now
+            };
+            CDC.tblChatHistories.InsertOnSubmit(newChat);
+            CDC.SubmitChanges();
 
             // Broad cast message
             Clients.All.messageReceived(userName, message, CurrentTime);
@@ -81,6 +81,7 @@ namespace ChatSite
 
             if (Message.Count > 100)
                 Message.RemoveAt(0);
+
         }
     }
 
